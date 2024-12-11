@@ -29,15 +29,20 @@ class SmartScrabble:
         If still no move, exchange all tiles.
         """
         words = []
-        size = 0
         i = 0
-        high_score = 0
         word_list = sorted(self.word_list, key=len, reverse=True)
         scores = []
         marker = True
 
+        # outer loop just runs everything over and over again until it has checked that 
+        # no word of size greater than 2 can be made from the given letters. this means
+        # it can check for the highest-scoring word in each length of word until it gets
+        # one that is actually playable.
         while marker == True:
+            # needs to reset size to 0 before it re-enters the first loop
             size = 0
+
+            # picks out every playable word of the next-longest length and puts them in a list
             while i < len(word_list) - 1:
                 word = word_list[i]
                 if len(word) < size:
@@ -47,13 +52,21 @@ class SmartScrabble:
                     words.append(word)
                 i += 1
             
+            # don't know if i need this if anymore tbh. there was a bug and this half-fixed it
+            # but then i really fixed the bug
             if words != []:
+                # calculates the scores of every word in the word list the first loop gave us
                 for word in words:
                     score = 0
                     for letter in word:
                         score += TILE_VALUES[letter]
                     scores.append((score, word))
+                
+                # sorts the word list by score
                 scores.sort()
+
+                # tries to play every word of the given length until it successfully plays one
+                # or runs out of words
                 while scores != []:
                     highest_word = scores[-1][1]
                     move = self._place_word(highest_word)
@@ -64,6 +77,7 @@ class SmartScrabble:
                         break
                     else:
                         return move
+            # when it's run through every word in the word list it quits out
             if i == len(word_list) - 1:
                 marker=False
 
