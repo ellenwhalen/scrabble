@@ -30,26 +30,42 @@ class SmartScrabble:
         """
         words = []
         size = 0
+        i = 0
         high_score = 0
-        for word in sorted(self.word_list, key=len, reverse=True):
-            if len(word) < size:
-                break
-            if self._can_form_word(word):
-                size = len(word)
-                words.append(word)
-        
-        highest_word = ""
-        for word in words:
-            score = 0
-            for letter in word:
-                score += TILE_VALUES[letter]
-            if score > high_score:
-                highest_word = word
-        
-        if highest_word != "":
-            move = self._place_word(highest_word)
-            if move:
-                return move
+        word_list = sorted(self.word_list, key=len, reverse=True)
+        scores = []
+        marker = True
+
+        while marker == True:
+            size = 0
+            while i < len(word_list) - 1:
+                word = word_list[i]
+                if len(word) < size:
+                    break
+                if self._can_form_word(word):
+                    size = len(word)
+                    words.append(word)
+                i += 1
+            
+            if words != []:
+                for word in words:
+                    score = 0
+                    for letter in word:
+                        score += TILE_VALUES[letter]
+                    scores.append((score, word))
+                scores.sort()
+                while scores != []:
+                    highest_word = scores[-1][1]
+                    move = self._place_word(highest_word)
+                    if not move:
+                        scores.pop(-1)
+                        continue
+                    elif move is None and i != len(word_list) - 1:
+                        break
+                    else:
+                        return move
+            if i == len(word_list) - 1:
+                marker=False
 
         # Default to a one-tile move if no valid word placement is found
         one_tile_move = self._find_one_tile_move()
