@@ -28,11 +28,28 @@ class SmartScrabble:
         If no valid move is found, attempt a single-tile move.
         If still no move, exchange all tiles.
         """
+        words = []
+        size = 0
+        high_score = 0
         for word in sorted(self.word_list, key=len, reverse=True):
+            if len(word) < size:
+                break
             if self._can_form_word(word):
-                move = self._place_word(word)
-                if move:
-                    return move
+                size = len(word)
+                words.append(word)
+        
+        highest_word = ""
+        for word in words:
+            score = 0
+            for letter in word:
+                score += TILE_VALUES[letter]
+            if score > high_score:
+                highest_word = word
+        
+        if highest_word != "":
+            move = self._place_word(highest_word)
+            if move:
+                return move
 
         # Default to a one-tile move if no valid word placement is found
         one_tile_move = self._find_one_tile_move()
