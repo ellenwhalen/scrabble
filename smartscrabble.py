@@ -1,3 +1,5 @@
+__author__ = "Idalyne Giron Castillo, Jermisha Hinton, Grace Wiseman, Ellen Whalen"
+
 from location import *
 from board import *
 from move import *
