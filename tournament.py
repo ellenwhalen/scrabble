@@ -23,8 +23,9 @@ class ScrabbleTournament:
                     i_won, j_won = self.play_game(players[i], players[j])
                     scores[i] += i_won
                     scores[j] += j_won
-        for i, player in enumerate(players):
-            print(f'{str(player)}: {scores[i]}')
+        return(scores)
+        # for i, player in enumerate(players):
+        #     print(f'{str(player)}: {scores[i]}')
 
     @staticmethod
     def play_game(a, b):
@@ -60,5 +61,19 @@ class ScrabbleTournament:
 
 if __name__ == '__main__':
     players = [SmartScrabble(),
-               SmartScrabble()]
-    ScrabbleTournament(players).run()
+               SmartScrabblev1()]
+    tot_scores = [0, 0]
+    for i in range(100): 
+        scores = ScrabbleTournament(players).run()
+        tot_scores[0] += scores[0]
+        tot_scores[1] += scores[1]
+    if tot_scores[0] == 0:
+        print(tot_scores)
+        win_rate = 0
+    elif tot_scores[1] == 0:
+        print(tot_scores)
+        win_rate = 1
+    else:
+        print(tot_scores)
+        win_rate = tot_scores[0]/(tot_scores[0] + tot_scores[1])
+    print("win rate: " + str(win_rate))
