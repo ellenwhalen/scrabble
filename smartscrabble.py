@@ -1,4 +1,4 @@
-__author__ = "Idalyne Giron Castillo, Jermisha Hinton, Grace Wiseman, Ellen Whalen"
+__author__ = "Idalyne Giron Castillo, Jermisha Hinton, Ellen Whalen,  Grace Wiseman"
 
 from location import *
 from board import *
