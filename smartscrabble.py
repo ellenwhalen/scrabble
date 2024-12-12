@@ -24,7 +24,7 @@ class SmartScrabble:
 
     def choose_move(self):
         """
-        Try to place the longest possible word from the word list.
+        Try to place the highest-scoring possible word from the word list in the highest-scoring spot.
         If no valid move is found, attempt a single-tile move.
         If still no move, exchange all tiles.
         """
@@ -33,58 +33,43 @@ class SmartScrabble:
         word_list = sorted(self.word_list, key=len, reverse=True)
         scores = []
 
-        # outer loop just runs everything over and over again until it has checked that 
-        # no word of size greater than 2 can be made from the given letters. this means
-        # it can check for the highest-scoring word in each length of word until it gets
-        # one that is actually playable.
-        while True:
-            # needs to reset size to 0 before it re-enters the first loop
-            size = 0
+        # picks out every playable word from the hand and puts them in a list
+        while i < len(word_list) - 1:
+            word = word_list[i]
+            if self._can_form_word(word):
+                size = len(word)
+                words.append(word)
+            i += 1
+        
+        if words != []:
+            # calculates the scores of every word in the word list
+            for word in words:
+                score = 0
+                for letter in word:
+                    score += TILE_VALUES[letter]
+                scores.append((score, word))
+            # sorts the word list by score
+            scores.sort()
 
-            # picks out every playable word of the next-longest length and puts them in a list
-            while i < len(word_list) - 1:
-                word = word_list[i]
-                if len(word) < size:
+            # tries to play every word of the given length until it successfully plays one
+            # or runs out of words
+            while scores != []:
+                highest_word = scores[-1][1]
+                move = self._place_word(highest_word)
+                if not move:
+                    scores.pop(-1)
+                    continue
+                elif not move and i != len(word_list) - 1:
                     break
-                if self._can_form_word(word):
-                    size = len(word)
-                    words.append(word)
-                i += 1
-            
-            # don't know if i need this if anymore tbh. there was a bug and this half-fixed it
-            # but then i really fixed the bug
-            if words != []:
-                # calculates the scores of every word in the word list the first loop gave us
-                for word in words:
-                    score = 0
-                    for letter in word:
-                        score += TILE_VALUES[letter]
-                    scores.append((score, word))
-                
-                # sorts the word list by score
-                scores.sort()
-
-                # tries to play every word of the given length until it successfully plays one
-                # or runs out of words
-                while scores != []:
-                    highest_word = scores[-1][1]
-                    move = self._place_word(highest_word)
-                    if not move:
-                        scores.pop(-1)
-                        continue
-                    elif not move and i != len(word_list) - 1:
-                        break
-                    else:
-                        return move
-            # when it's run through every word in the word list it quits out
-            if i == len(word_list) - 1:
-                break
+                else:
+                    return move
 
         # Default to a one-tile move if no valid word placement is found
         one_tile_move = self._find_one_tile_move()
         if one_tile_move:
             return one_tile_move
-
+        
+        # if still no move, exchange tiles
         return ExchangeTiles(ALL_TILES)
 
     def _can_form_word(self, word):
@@ -107,6 +92,7 @@ class SmartScrabble:
     def _place_word(self, word):
         """
         Try to place the given word on the board, checking all possible tiles for valid placements.
+        Picks the highest-possible scoring placement.
         """
         placements = []
         for row in range(WIDTH):
@@ -166,11 +152,3 @@ class SmartScrabble:
         if best_move:
             return best_move
         return ExchangeTiles(ALL_TILES)
-
-
-# todo (possible)
-# ---------------
-# optimize first move
-# look at ALL words and compare their scores
-# store board spots for chosen word and compare best-scoring board spot
-# (aspirational) hash data structure which holds all possible words and takes close to constant time
