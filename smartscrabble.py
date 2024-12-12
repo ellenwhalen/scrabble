@@ -32,13 +32,12 @@ class SmartScrabble:
         i = 0
         word_list = sorted(self.word_list, key=len, reverse=True)
         scores = []
-        marker = True
 
         # outer loop just runs everything over and over again until it has checked that 
         # no word of size greater than 2 can be made from the given letters. this means
         # it can check for the highest-scoring word in each length of word until it gets
         # one that is actually playable.
-        while marker == True:
+        while True:
             # needs to reset size to 0 before it re-enters the first loop
             size = 0
 
@@ -73,13 +72,13 @@ class SmartScrabble:
                     if not move:
                         scores.pop(-1)
                         continue
-                    elif move is None and i != len(word_list) - 1:
+                    elif not move and i != len(word_list) - 1:
                         break
                     else:
                         return move
             # when it's run through every word in the word list it quits out
             if i == len(word_list) - 1:
-                marker=False
+                break
 
         # Default to a one-tile move if no valid word placement is found
         one_tile_move = self._find_one_tile_move()
@@ -109,6 +108,7 @@ class SmartScrabble:
         """
         Try to place the given word on the board, checking all possible tiles for valid placements.
         """
+        placements = []
         for row in range(WIDTH):
             for col in range(WIDTH):
                 location = Location(row, col)
@@ -116,9 +116,28 @@ class SmartScrabble:
                     try:
                         # Check if the word can be placed starting at this location
                         self._gatekeeper.verify_legality(word, location, direction)
-                        return PlayWord(word, location, direction)
+
+                        # if it's legal, find the score
+                        score = self._gatekeeper.score(word, location, direction)
+
+                        # can't append the direction as it is to the list because you can't compare Location objects lol
+                        if direction == HORIZONTAL:
+                            dir = 0
+                        else:
+                            dir = 1
+                        
+                        # append all the info to a list of possible placements
+                        placements.append((score, row, col, dir))
                     except:
                         pass  # Move is not legal; skip to the next position
+        if placements != []:
+            placements.sort()
+            location = Location(placements[-1][1], placements[-1][2])
+            if placements[-1][3] == 0:
+                direction = HORIZONTAL
+            else:
+                direction = VERTICAL
+            return PlayWord(word, location, direction)
         return None
 
     def _find_one_tile_move(self):
@@ -147,3 +166,11 @@ class SmartScrabble:
         if best_move:
             return best_move
         return ExchangeTiles(ALL_TILES)
+
+
+# todo (possible)
+# ---------------
+# optimize first move
+# look at ALL words and compare their scores
+# store board spots for chosen word and compare best-scoring board spot
+# (aspirational) hash data structure which holds all possible words and takes close to constant time
